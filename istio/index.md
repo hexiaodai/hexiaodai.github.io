@@ -14,6 +14,8 @@
 
 [微服务添加 AuthN 验证](./authz/微服务添加AuthN验证.md)
 
+[认证和授权](./安全/认证和授权.md)
+
 ## 常见问题
 
 [Sidecar 启动顺序问题](./faq/sidecar启动顺序问题.md)
