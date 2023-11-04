@@ -1,9 +1,5 @@
 那年，写过的 BUG
 
-<!-- **📈 my github stats**
-
-<p align="left"> <img src="https://github-readme-stats.vercel.app/api?username=hexiaodai&show_icons=true" alt="hexiaodai" /> </p> -->
-
 ## 🎉 开源贡献
 
 | 项目 | 角色 | GitHub | Stars |
@@ -11,17 +7,9 @@
 | Fence | 创建者 | <https://github.com/hexiaodai/fence> | [![GitHub](https://img.shields.io/github/stars/hexiaodai/fence?logo=github&labelColor=495867&color=495867)](https://github.com/hexiaodai/fence) |
 | Istio | Member | <https://github.com/istio/istio> | [![GitHub](https://img.shields.io/github/stars/istio/istio?logo=github&labelColor=495867&color=495867)](https://github.com/istio/istio) |
 
-<!-- [![GitHub](https://img.shields.io/github/stars/hexiaodai/fence?logo=github&labelColor=495867&color=495867)](https://github.com/hexiaodai/fence)
-
-[Fence](https://github.com/hexiaodai/fence) 是一个开源项目，用于自动管理 Istio 自定义资源 Sidecar。
-
-服务网格内服务数量过多时，Envoy 配置量太大，新上的应用长时间处于 Not Ready 状态。为此运维人员需要管理自定义资源 Sidecar，手动为应用配置服务依赖关系。
-
-[Fence](https://github.com/hexiaodai/fence) 拥有自动获取服务依赖关系的能力，提供自动管理自定义资源 Sidecar。 -->
-
 ## 📝 Blog
 
-### 📖 Istio
+### Istio
 
 #### 金丝雀部署
 
@@ -35,7 +23,7 @@
 
 #### 安全策略
 
-[微服务添加 AuthN 验证](./istio/authz/微服务添加AuthN验证.md)
+[微服务添加 AuthN 验证](./istio/authz/微服务添加authn验证.md)
 
 [认证和授权](./istio/安全/认证和授权.md)
 
@@ -59,7 +47,9 @@
 
 ### Kubernetes
 
-#### 实习期间学习记录
-
 [浅谈容器网络](./kubernetes/network/浅谈容器网络.md)
+
+### KubeVirt
+
+
 
