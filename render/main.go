@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
+	"path/filepath"
 	"text/template"
 
 	yaml "gopkg.in/yaml.v2"
@@ -52,6 +54,10 @@ func funcMap() template.FuncMap {
 	return template.FuncMap{
 		"inc": func(i int) int {
 			return i + 1
+		},
+		"href": func(filename string) string {
+			extension := filepath.Ext(filename)
+			return fmt.Sprintf("%v.html", filename[0:len(filename)-len(extension)])
 		},
 	}
 }

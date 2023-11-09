@@ -13,7 +13,7 @@
     <div id="content">
         {{- range $index, $blog := .blogs }}
         <div class="blog">
-            <a href="{{ $blog.path }}">
+            <a href="{{ href $blog.path }}">
                 <h2>{{ $blog.title }}</h2>
                 <p>{{ $blog.description }}</p>
             </a>
