@@ -11,17 +11,23 @@
 
 <body>
     <div id="content">
-        {{- range $index, $blog := .blogs }}
+        {{- range $index, $blog := .Blogs }}
         <div class="blog">
-            <a href="{{ href $blog.path }}">
-                <h2>{{ $blog.title }}</h2>
-                <p>{{ $blog.description }}</p>
+            <a href="{{ href $blog.Path }}">
+                <h2>{{ $blog.Title }}</h2>
+                <p class="description">
+                    {{- if $blog.Description -}}
+                    {{ $blog.Description }}
+                    {{- else -}}
+                    {{ description $blog.Path }}
+                    {{- end -}}
+                </p>
             </a>
-            <p class="date">{{ $blog.date }}</p>
+            <p class="date">{{ $blog.Date }}</p>
             <p class="tags">
-                {{- range $index, $tag := $blog.selector }}
+                {{- range $index, $tag := $blog.Selector }}
                 <a href="#">{{ $tag }}</a>
-                {{ if gt (len $blog.selector) (inc $index) }} / {{- end }}
+                {{- if gt (len $blog.Selector) (inc $index) }} / {{- end }}
                 {{- end }}
             </p>
         </div>
@@ -29,8 +35,8 @@
     </div>
     <div id="sidebar">
         <div class="tags">
-            {{- range $index, $tag := .tags }}
-            <a href="#">{{ $tag.title }}</a>
+            {{- range $index, $tag := .Tags }}
+            <a href="assets/{{ $tag.Title }}.html">{{ $tag.Title }}</a>
             {{- end }}
         </div>
     </div>
