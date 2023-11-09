@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hexiaodai</title>
+    <link rel="stylesheet" href="assets/css/index.css">
+</head>
+
+<body>
+    <div id="content">
+        {{- range $index, $blog := .blogs }}
+        <div class="blog">
+            <a href="{{ $blog.path }}">
+                <h2>{{ $blog.title }}</h2>
+                <p>{{ $blog.description }}</p>
+            </a>
+            <p class="date">{{ $blog.date }}</p>
+            <p class="tags">
+                {{- range $index, $tag := $blog.selector }}
+                <a href="#">{{ $tag }}</a>
+                {{ if gt (len $blog.selector) (inc $index) }} / {{- end }}
+                {{- end }}
+            </p>
+        </div>
+        {{- end }}
+    </div>
+    <div id="sidebar">
+        <div class="tags">
+            {{- range $index, $tag := .tags }}
+            <a href="#">{{ $tag.title }}</a>
+            {{- end }}
+        </div>
+    </div>
+</body>
+
+</html>

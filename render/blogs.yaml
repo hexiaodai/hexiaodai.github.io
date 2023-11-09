@@ -1,0 +1,66 @@
+tags:
+  - title: Istio
+    description:
+    items:
+      - 金丝雀部署
+      - 安全策略
+      - 常见问题
+      - 故障排查
+      - Debug
+  - title: Kubernetes
+    description:
+    items:
+      - 浅谈容器网络
+  - title: KubeVirt
+    description:
+    items: []
+blogs:
+  - selector: [Istio, 金丝雀部署]
+    title: 具有会话亲和性的金丝雀部署
+    # description: this is a test.
+    date: 2023-08-31
+    path: istio/canary/具有会话亲和性的金丝雀部署.md
+  - selector: [Istio, 金丝雀部署]
+    title: 流量镜像
+    date: 2023-09-01
+    path: istio/canary/流量镜像.md
+  - selector: [Istio, 金丝雀部署]
+    title: A/B 测试
+    date: 2023-09-01
+    path: istio/canary/AB测试.md
+  - selector: [Istio, 安全策略]
+    title: 微服务添加 AuthN 验证
+    date: 2023-09-01
+    path: istio/authz/微服务添加authn验证.md
+  - selector: [Istio, 安全策略]
+    title: 认证和授权
+    date: 2023-09-01
+    path: istio/authz/认证和授权.md
+  - selector: [Istio, 常见问题]
+    title: Sidecar 启动顺序问题
+    date: 2023-09-01
+    path: istio/faq/sidecar启动顺序问题.md
+  - selector: [Istio, 常见问题]
+    title: VirtualService 路由匹配顺序问题
+    date: 2023-09-01
+    path: istio/faq/virtualservice路由匹配顺序问题.md
+  - selector: [Istio, 故障排查]
+    title: 重启 istio-ingressgateway 无法启动
+    date: 2023-09-01
+    path: istio/troubleshooting/重启istio-ingressgateway无法启动.md
+  - selector: [Istio, 故障排查]
+    title: VirutualService 不生效
+    date: 2023-09-01
+    path: istio/troubleshooting/virutualservice不生效.md
+  - selector: [Istio, 故障排查]
+    title: "SSL routines: OPENSSL_internal:CERTIFICATE_VERIFY_FAILED"
+    date: 2023-09-01
+    path: istio/troubleshooting/tls证书认证错误.md
+  - selector: [Istio, Debug]
+    title: 自定义 Proxy 日志级别
+    date: 2023-09-01
+    path: istio/debug/自定义Proxy日志级别.md
+  - selector: [Kubernetes]
+    title: 浅谈容器网络
+    date: 2020-10-5
+    path: kubernetes/network/浅谈容器网络.md
