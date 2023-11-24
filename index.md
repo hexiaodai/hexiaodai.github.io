@@ -21,7 +21,7 @@
 
 #### 安全策略
 
-[微服务添加 AuthN 验证](./istio/authz/微服务添加authn验证.md)
+[微服务添加 AuthN 验证](./istio/安全/authn.md)
 
 [认证和授权](./istio/安全/认证和授权.md)
 
