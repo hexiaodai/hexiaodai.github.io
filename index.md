@@ -49,7 +49,12 @@
 
 ### Kubernetes
 
-[容器网络学习记录](./kubernetes/network/doc.md)
+[单节点容器网络实验](./kubernetes/network/单节点容器网络实验.md)
+
+[跨主机通信 Overlay 网络实验](./kubernetes/network/跨主机通信overlay网络实验.md)
+
+[跨主机通信路由模式动手实验](./kubernetes/network/跨主机通信路由模式动手实验.md)
+<!-- [容器网络学习记录](./kubernetes/network/doc.md) -->
 
 ### KubeVirt
 
