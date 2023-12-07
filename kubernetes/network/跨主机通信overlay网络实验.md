@@ -1,5 +1,12 @@
 # 跨主机通信 Overlay 网络动手实验
 
+- [跨主机通信 Overlay 网络动手实验](#跨主机通信-overlay-网络动手实验)
+  - [实验目的](#实验目的)
+  - [实验环境](#实验环境)
+    - [安装依赖](#安装依赖)
+  - [动手实验](#动手实验)
+  - [总结](#总结)
+
 容器跨主机通信一般采用**封包模式**、**路由模式**，Flannel 项目使用 VXLAN 协议实现了 Overlay 网络，VXLAN 协议是一种封包技术，将二层数据包封装成 UDP 数据包，在外层的网络协议栈中进行传输。实现 VXLAN 协议的设备是 VTEP（VXLAN Tunnel Endpoint），即在宿主机之间通过 VTEP 设备建立“隧道”，在其中传输虚拟二层网络包。
 
 ![VXLAN packet](./assets/93c52349da352d67.png)
@@ -44,7 +51,6 @@ apt install bridge-utils
 
 ```bash
 sysctl net.ipv4.conf.all.forwarding=1
-net.ipv4.conf.all.forwarding = 1
 ip netns add docker1
 ip link add veth0 type veth peer name veth1
 ip link set veth0 netns docker1
@@ -62,7 +68,6 @@ ip netns exec docker1 route add default gw 172.17.0.1 veth0
 
 ```bash
 sysctl net.ipv4.conf.all.forwarding=1
-net.ipv4.conf.all.forwarding = 1
 ip netns add docker2
 ip link add veth0 type veth peer name veth1
 ip link set veth0 netns docker2
@@ -232,7 +237,7 @@ PING 172.17.0.2 (172.17.0.2) 56(84) bytes of data.
 
 ```bash
 # tcpdump: docker1 容器内的 veth 虚拟网卡
-root@ubuntu:~# ip netns exec docker1 tcpdump -i veth0 -n
+ip netns exec docker1 tcpdump -i veth0 -n
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
 listening on veth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 08:20:08.536932 IP 172.18.0.2 > 172.17.0.2: ICMP echo request, id 12441, seq 1, length 64
@@ -264,7 +269,7 @@ listening on ens33, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 发现 docker1 容器的 veth 虚拟网卡、vxlan100、br0 网桥，数据包的源地址和目的地址分别是 docker1 容器 veth 虚拟网卡的 IP 和 docker2 容器 veth 虚拟网卡的 IP。所以验证上文中的这句话：“Flannel 项目使用 VXLAN 协议，在 UDP 之上实现了一个虚拟的二层网络，连接在这个虚拟网络的容器，就像连接在普通局域网上一样，可以互相通信。”
 
-ens33 宿主机网卡，数据包的源地址和目的地址分别是 Node-1 ens33 网卡的 IP 和 Node-2 ens33 网卡的 IP。并且通过 tcpdump 看到，这是一个携带 VXLAN header 的数据包，VNI 等于 100，也就是上文中创建的 vxlan100 的 ID。所有验证了上文中的这句话：“Flannel 项目使用 VXLAN 协议实现了 Overlay 网络，VXLAN 协议是一种封包技术，将二层数据包封装成 UDP 数据包，在外层的网络协议栈中进行传输。实现 VXLAN 协议的设备是 VTEP（VXLAN Tunnel Endpoint），即在宿主机之间通过 VTEP 设备建立“隧道”，在其中传输虚拟二层网络包。”
+ens33 宿主机网卡，数据包的源地址和目的地址分别是 Node-1 ens33 网卡的 IP 和 Node-2 ens33 网卡的 IP。并且通过 tcpdump 看到，这是一个携带 VXLAN header 的数据包，VNI 等于 100，也就是上文中创建的 vxlan100 的 ID。所以验证了上文中的这句话：“Flannel 项目使用 VXLAN 协议实现了 Overlay 网络，VXLAN 协议是一种封包技术，将二层数据包封装成 UDP 数据包，在外层的网络协议栈中进行传输。实现 VXLAN 协议的设备是 VTEP（VXLAN Tunnel Endpoint），即在宿主机之间通过 VTEP 设备建立“隧道”，在其中传输虚拟二层网络包。”
 
 ## 总结
 
