@@ -54,8 +54,13 @@
 [跨主机通信 Overlay 网络实验](./kubernetes/network/跨主机通信overlay网络实验.md)
 
 [跨主机通信路由模式动手实验](./kubernetes/network/跨主机通信路由模式动手实验.md)
-<!-- [容器网络学习记录](./kubernetes/network/doc.md) -->
+
+[跨主机通信路由模式动手实验](./kubernetes/network/跨主机通信路由模式动手实验.md)
+
+[跨主机通信 Calico IPIP 动手实验](./kubernetes/network/跨主机通信calicoIPIP动手实验.md)
 
 ### KubeVirt
+
+[KubeVrit + Masquerade 动手实验](./kubevirt/network/masquerade.md)
 
 [KubeVirt 网络最佳实践](./kubevirt/network/kubevirt-spiderpool.md)
