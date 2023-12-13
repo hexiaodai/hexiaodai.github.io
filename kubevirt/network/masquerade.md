@@ -220,7 +220,7 @@ version: 1.0.0
 
 5. 测试虚拟机与外部网络通信：
 
-在虚拟机内，`ping 153.3.238.102`（这个是 baidu 的 IP 地址），并且使用 tcpdump 分别抓 virt-launcher Pod 的 eth0、k6t-eth0、tap0 设备，以及虚拟机 eth0 设备的数据包。
+在虚拟机内，`ping 153.3.238.102`（这个是 baidu 的 IP 地址），并且使用 tcpdump 分别抓 virt-launcher Pod 的 eth0、k6t-eth0、tap0 设备，虚拟机 eth0 设备的数据包，master 节点主机的 ens192 设备。
 
 ```bash
 # 在虚拟机上 ping 153.3.238.102
@@ -255,6 +255,13 @@ tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
 04:24:23.137110 IP 10.233.70.50 > 153.3.238.102: ICMP echo request, id 9866, seq 1, length 64
 04:24:23.144406 IP 153.3.238.102 > 10.233.70.50: ICMP echo reply, id 9866, seq 1, length 64
+
+# tcpdump: master 节点 ens192
+[root@master ~]# tcpdump -i ens192 -n | grep 153.3.238.102
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on ens192, link-type EN10MB (Ethernet), capture size 262144 bytes
+20:50:04.864368 IP 10.7.120.1 > 153.3.238.102: ICMP echo request, id 33435, seq 1, length 64
+20:50:04.872932 IP 153.3.238.102 > 10.7.120.1: ICMP echo reply, id 33435, seq 1, length 64
 ```
 
 通过 tcpdump 分别监听：virt-launcher Pod 的 eth0、k6t-eth0、tap0 设备，以及虚拟机 eth0 设备的数据包。
@@ -265,9 +272,9 @@ virt-launcher Pod 的 eth0 网卡，数据包的源地址和目的地址分别�
 
 查看 virt-launcher Pod 的 iptables 规则：
 
-TODO: virt-launcher 没有 iptables 命令
+> TODO: virt-launcher 没有 iptables 命令
 
-*virt-launcher Pod 内，应该有一条类似的 MASQUERADE 链规则*
+*virt-launcher Pod 内，应该有一条类似的 MASQUERADE 链规则：*
 
 ```bash
 [root@10-6-8-1 ~]# iptables -t nat -L POSTROUTING -n -v
@@ -280,4 +287,41 @@ Chain POSTROUTING (policy ACCEPT 241 packets, 14460 bytes)
 
 > 因为虚拟机的 IP 地址外部并不认识（外部指的是宿主机连接在公网的路由器），如果它要访问外网，需要在数据包离开前将源地址替换为宿主机的 IP，这样外部主机才能用宿主机的 IP 作为目的地址发回响应。
 
-这里有点问题，我暂时没法查看 virt-launcher Pod 内的 iptables 规则。
+master 节点的 ens192 网卡，数据包的源地址和目的地址分别是 master 节点的 ens192 网卡的 IP（10.7.120.1）和 baidu（153.3.238.102）的 IP。
+
+查看 master 节点 的 iptables 规则：
+
+```bash
+[root@master ~]# iptables -t nat -vnL
+Chain POSTROUTING (policy ACCEPT 145 packets, 8716 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+7859K  472M cali-POSTROUTING  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:O3lYWMrLQYEMJtB5 */
+<...>
+Chain cali-POSTROUTING (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+  41M 2477M cali-fip-snat  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:Z-c7XtVd2Bq7s_hA */
+  41M 2477M cali-nat-outgoing  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:nYKhEzDlr11Jccal */
+    0     0 MASQUERADE  all  --  *      tunl0   0.0.0.0/0            0.0.0.0/0            /* cali:SXWvdsbh4Mw7wOln */ ADDRTYPE match src-type !LOCAL limit-out ADDRTYPE match src-type LOCAL
+<...>
+Chain cali-nat-outgoing (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+  18M 1056M MASQUERADE  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:flqWnvo8yq4ULQLa */ match-set cali40masq-ipam-pools src ! match-set cali40all-ipam-pools dst
+
+# DNAT
+[root@master ~]# iptables -t nat -vnL
+Chain PREROUTING (policy ACCEPT 646 packets, 22600 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+  23M 1282M cali-PREROUTING  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:6gwbT8clXdHdC1b1 */
+<...>
+Chain cali-PREROUTING (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+  23M 1282M cali-fip-dnat  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* cali:r6XmIziWUJsdOK6Z */
+```
+
+cali-POSTROUTING 链插入到 POSTROUTING 链的顶部，在该链 cali-nat-outgoin 内，对源自 cali40all-ipam-pools 的所有出口流量进行 SNAT。cali-PREROUTING 链同理，对入口流量进行 DNAT。[查看官方文档](https://www.tkng.io/cni/calico/#snat-functionality)
+
+> 因为 Pod 的 IP 地址外部并不认识（外部指的是宿主机连接在公网的路由器），如果它要访问外网，需要在数据包离开前将源地址替换为宿主机 ens192 的 IP，这样外部主机才能用宿主机 ens192 的 IP 作为目的地址发回响应。
+
+## 总结
+
+通过部署 masquerade 网络模式的 KubeVirt 虚拟机，然后通过 tcpdump 工具监听并且分析了虚拟机内部与外部网络通信所经过的所有设备。发现虚拟机出口 Pod 的流量进行 masquerade；Pod 出口外部网络的流量进行 masquerade；外部网络进入 Pod 的流量进行 DNAT；Pod 进入虚拟机的流量首先经过 k6t-eth0 网桥，并且进行 DNAT 到虚拟机（10.0.2.2）。掌握了 masquerade 网络模式虚拟机网络排障的基本能力。
