@@ -1,13 +1,11 @@
 那年，写过的 BUG
 
-<!--
 ## 🎉 开源贡献
 
 | 项目 | 角色 | GitHub | Stars |
 | :---- | :---- | :---- | :---- |
 | Fence | 创建者 | <https://github.com/hexiaodai/fence> | [![GitHub](https://img.shields.io/github/stars/hexiaodai/fence?logo=github&labelColor=495867&color=495867)](https://github.com/hexiaodai/fence) |
 | Istio | Member | <https://github.com/istio/istio> | [![GitHub](https://img.shields.io/github/stars/istio/istio?logo=github&labelColor=495867&color=495867)](https://github.com/istio/istio) |
--->
 
 ## 📝 Blog
 
