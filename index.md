@@ -59,8 +59,12 @@
 
 [跨主机通信 Calico IPIP 动手实验](./kubernetes/network/跨主机通信calicoIPIP动手实验.md)
 
+[跨主机通信 macvlan 动手实验](./kubernetes/network/跨主机通信macvlan动手实验.md)
+
 ### KubeVirt
 
-[KubeVrit + Masquerade 动手实验](./kubevirt/network/masquerade.md)
+[KubeVrit Masquerade 动手实验](./kubevirt/network/masquerade.md)
+
+[KubeVrit Passt + macvlan 动手实验](./kubevirt/network/passt.md)
 
 [KubeVirt 网络最佳实践](./kubevirt/network/kubevirt-spiderpool.md)
