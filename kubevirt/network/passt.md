@@ -106,14 +106,7 @@ passt-macvlan   2m20s   Running   10.233.70.4    master     True
 
 不过这并不影响我们的实验。
 
-4. 创建 macvlan 网络：
-
-```bash
-# 在所有节点上执行
-ip link add link ens192 dev macvlan1 type macvlan mode vepa
-```
-
-5. 删除 `virt-launcher-passt-macvlan` Pod 的 eth0 网卡：
+4. 删除 `virt-launcher-passt-macvlan` Pod 的 eth0 网卡：
 
 *这里没有找到合适的方法判断 `virt-launcher-passt-macvlan` Pod 所在的 Network Namespace 名字，所以使用 `ls /var/run/netns` 命令，通过 Pod 创建的时间确定。*
 
@@ -135,6 +128,13 @@ ip netns exec 75ba4216ee82 sh
 sh-4.2# ip link set dev eth0 down
 # 删除网卡
 sh-4.2# ip link delete eth0
+```
+
+5. 创建 macvlan 网络：
+
+```bash
+# 在所有节点上执行
+ip link add link ens192 dev macvlan1 type macvlan mode vepa
 ```
 
 6. 将 macvlan 子接口挂到 virt-launcher-passt-macvlan Pod（Network Namespace）中：
@@ -162,6 +162,8 @@ sh-4.2# ip a
 ```
 
 显然，已经为 virt-launcher-passt-macvlan Pod 分配了一个主网卡为 Node ens192，子网卡为 macvlan1 的 IP 地址。
+
+> 通过 macvlan1@if2 可以看到，macvlan1 子网卡是 Node 的第 2 个网卡，也就是 ens192 网卡。
 
 *注意，Node ens192 的 IP 是 10.7.120.1/16，配置的子接口 IP 也必须是同一网段的。这里我将 macvlan1 子接口 IP 配置为 10.7.120.202/16。*
 
@@ -236,4 +238,4 @@ PING 10.64.1.46 (10.64.1.46) 56(84) bytes of data.
 
 ## 总结
 
-通过使用 Calico CNI 网络插件，与 KubeVirt Passt 网络模式结合，部署了一台 KubeVirt 虚拟机；然后将这台虚拟机（virt-launcher Pod）的 eth0 网卡删除；然后在 Node ens192 网卡上创建了一个 macvlan 子接口，并且将其挂载到 virt-launcher Pod 的 Network Namespace 中；然后给 virt-launcher Pod 的 macvlan 子接口分配了 IP 并设置了默认路由。并且测试了 macvlan 模式下，virt-launcher Pod、KubeVirt 虚拟机、10.7.0.0/16 网段上的机器（当然，在 DaoCloud 局域网内也是可以的）之间的网络连通性。
+通过使用 Calico CNI 网络插件，与 KubeVirt Passt 网络模式结合，部署了一台 KubeVirt 虚拟机；然后将这台虚拟机（virt-launcher Pod）的 eth0 网卡删除（删除 Calico CNI 分配的网络和 IP）；然后在 Node ens192 网卡上创建了一个 macvlan 子接口，并且将其挂载到 virt-launcher Pod 的 Network Namespace 中；然后给 virt-launcher Pod 的 macvlan 子接口分配了 IP 并设置了默认路由。并且测试了 macvlan 模式下，virt-launcher Pod、KubeVirt 虚拟机、10.7.0.0/16 网段上的机器（当然，在 DaoCloud 局域网内也是可以的）之间的网络连通性。
