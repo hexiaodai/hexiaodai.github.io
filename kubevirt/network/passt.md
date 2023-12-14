@@ -1,6 +1,8 @@
 # Kubevirt Passt + macvlan 网络动手实验
 
-passt（Plug A Simple Socket Transport）是一个实现了二层网络接口与宿主机本地四层网络 Socket（TCP、UDP、ICMP/ICMPv6 回显）之间转换的翻译层。将宿主机的四层网络翻译成 KubeVirt 虚拟机能够识别的二层网络，然后通过 UNIX Socket 与 KubeVirt 虚拟机通信。
+passt（Plug A Simple Socket Transport）是一个实现了二层网络接口与宿主机本地四层网络 Socket（TCP、UDP、ICMP/ICMPv6 回显）之间转换的翻译层。将宿主机的四层网络翻译成 KubeVirt 虚拟机能够识别的二层网络，然后通过 UNIX Domain Socket 与 KubeVirt 虚拟机的 eth0（virtio_net）网卡通信。
+
+Unix domain socket 又叫 IPC（inter-process communication 进程间通信）socket，用于实现同一主机上的进程间通信。socket 原本是为网络通讯设计的，但后来在 socket 的框架上发展出一种 IPC 机制，就是 UNIX domain socket。不需要经过网络协议栈，不需要打包拆包、计算校验和、维护序号和应答等，只是将应用层数据从一个进程拷贝到另一个进程。这是因为，IPC 机制本质上是可靠的通讯，而网络协议是为不可靠的通讯设计的。
 
 官方文档：<https://passt.top/passt/about>
 
@@ -106,7 +108,47 @@ passt-macvlan   2m20s   Running   10.233.70.4    master     True
 
 不过这并不影响我们的实验。
 
-4. 删除 `virt-launcher-passt-macvlan` Pod 的 eth0 网卡：
+4. 进入 `virt-launcher-passt-macvlan` Pod：
+
+```bash
+kubectl exec -it virt-launcher-passt-macvlan bash
+
+# 使用 top 命令，查看 passt 进程
+bash-5.1$ top
+top - 06:20:50 up 45 days, 18:08,  0 users,  load average: 20.67, 19.13, 19.18
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+   49 qemu      20   0   85588  41372   1024 S   0.0   0.3   0:01.07 passt.avx2
+
+# 使用 passt 命令，查看网络配置信息
+bash-5.1$ passt.avx2
+No external routable interface for IPv6
+Outbound interface (IPv4): macvlan1
+MAC:
+    host: 36:03:73:60:a4:70
+DHCP:
+    assign: 10.7.120.202
+    mask: 255.255.0.0
+    router: 10.7.0.1
+DNS:
+    169.254.25.10
+DNS search list:
+    default.svc.cluster.local
+    svc.cluster.local
+    cluster.local
+
+# 使用 passt 命令，查看帮助信息
+bash-5.1$ passt.avx2 -h
+  -s, --socket PATH	UNIX domain socket path
+    default: probe free path starting from /tmp/passt_1.socket
+  <...>
+```
+
+可以看到 `passt.avx2` 命令输出了 virt-launcher Pod macvlan1 网卡的信息，其中 MAC 和 IP 地址与 macvlan1 网卡的配置一致。这里没有问题。
+
+`passt.avx2 -h` 命令输出了丰富的 passt 命令的帮助信息，其中 `--socket` 参数是 UNIX domain socket 的路径，默认从 `/tmp/passt_1.socket` 读取，可以使用 `ls /tmp/ | grep passt` 命令查看。
+
+5. 删除 `virt-launcher-passt-macvlan` Pod 的 eth0 网卡：
 
 *这里没有找到合适的方法判断 `virt-launcher-passt-macvlan` Pod 所在的 Network Namespace 名字，所以使用 `ls /var/run/netns` 命令，通过 Pod 创建的时间确定。*
 
@@ -130,21 +172,21 @@ sh-4.2# ip link set dev eth0 down
 sh-4.2# ip link delete eth0
 ```
 
-5. 创建 macvlan 网络：
+6. 创建 macvlan 网络：
 
 ```bash
 # 在所有节点上执行
 ip link add link ens192 dev macvlan1 type macvlan mode vepa
 ```
 
-6. 将 macvlan 子接口挂到 virt-launcher-passt-macvlan Pod（Network Namespace）中：
+7. 将 macvlan 子接口挂到 virt-launcher-passt-macvlan Pod（Network Namespace）中：
 
 ```bash
 # 在 Node 上执行
 ip link set macvlan1 netns 75ba4216ee82
 ```
 
-7. 进入 75ba4216ee82 Network Namespace，分别配置 IP 地址：
+8. 进入 75ba4216ee82 Network Namespace，分别配置 IP 地址：
 
 ```bash
 ip addr add 10.7.120.202/16 dev macvlan1
@@ -167,7 +209,7 @@ sh-4.2# ip a
 
 *注意，Node ens192 的 IP 是 10.7.120.1/16，配置的子接口 IP 也必须是同一网段的。这里我将 macvlan1 子接口 IP 配置为 10.7.120.202/16。*
 
-8. 为 virt-launcher-passt-macvlan Pod（Network Namespace）配置默认路由：
+9. 为 virt-launcher-passt-macvlan Pod（Network Namespace）配置默认路由：
 
 ```bash
 # 在 75ba4216ee82 Network Namespace 内执行
@@ -183,7 +225,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 0.0.0.0         10.7.0.1        0.0.0.0         UG    0      0        0 macvlan1
 ```
 
-9. 测试网络连通性（virt-launcher-passt-macvlan Pod 端）：
+10. 测试网络连通性（virt-launcher-passt-macvlan Pod 端）：
 
 在任意一台连接了 10.7.0.0/16 网段的机器上执行（当然，在 DaoCloud 局域网内也是可以的）：
 
@@ -207,7 +249,7 @@ listening on macvlan1, link-type EN10MB (Ethernet), capture size 262144 bytes
 
 显然，从 MAC OS 物理机向 10.7.120.202 发送的网络数据包，成功出现在了 virt-launcher-passt-macvlan Pod 网络协议栈中。这里没有任何问题。
 
-10.  测试网络连通性（KubeVirt passt-macvlan 虚拟机端）：
+11.  测试网络连通性（KubeVirt passt-macvlan 虚拟机端）：
 
 ```bash
 # 在 MAC OS 物理机上（ssh virt-launcher-passt-macvlan Pod 的 IP）
