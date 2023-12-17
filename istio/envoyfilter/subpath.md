@@ -1,10 +1,33 @@
 <!-- date: 2023-09-01 -->
 
-# 使用 Envoyfilter 实现 Subpath 功能
+# 使用 Envoyfilter 实现 subpath 功能
 
-Istio 原生不支持 Subpath，但是在某些场景下我们需要这个功能。原理很简单，可以通过 Envoyfilter 拦截七层流量，修改 headers 的 path 属性实现。
+Istio 原生不支持 subpath，但是在某些场景下我们需要这个功能。原理很简单，可以通过 Envoyfilter 拦截七层流量，修改 headers 的 path 属性实现。
 
 ```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: subpath-productpage
+  namespace: istio-system
+spec:
+  exportTo:
+  - "*"
+  hosts:
+  - "*"
+  gateways:
+  - default/bookinfo-gateway
+  http:
+  - name: mysubpath
+    match:
+      - uri:
+          exact: /mysubpath
+      - uri:
+          prefix: /mysubpath/
+    route:
+    - destination:
+        host: productpage
+---
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -15,33 +38,29 @@ spec:
     labels:
       istio: ingressgateway
   configPatches:
-    - applyTo: HTTP_FILTER
+    - applyTo: HTTP_ROUTE
       match:
         context: GATEWAY
-        listener:
-          filterChain:
-            filter:
-              name: envoy.filters.network.http_connection_manager
-              subFilter:
-                name: envoy.filters.http.router
+        routeConfiguration:
+          vhost:
+            route:
+              name: mysubpath
       patch:
-        operation: INSERT_BEFORE
+        operation: MERGE
         value:
           name: envoy.lua
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
-            inlineCode: |-
-              function envoy_on_request(request_handle)
-                local path = request_handle:headers():get(":path")
-                local mysubpath = "/${mysubpath}"
-                if string.sub(path,1,string.len(mysubpath)) ~= mysubpath then
-                    return
-                end
-                local _, _, rest = string.find(path, "/[^/]+/(.*)")
-                if rest then
-                  request_handle:headers():replace(":path", "/" .. rest)
-                end
-              end
+          typed_per_filter_config:
+            envoy.filters.http.lua:
+              '@type': type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+              source_code:
+                inline_string: |-
+                  function envoy_on_request(request_handle)
+                    local path = request_handle:headers():get(":path")
+                    local _, _, rest = string.find(path, "/[^/]+/(.*)")
+                    if rest then
+                      request_handle:headers():replace(":path", "/" .. rest)
+                    end
+                  end
 ```
 
 部署 [Bookinfo Application](https://istio.io/latest/docs/examples/bookinfo/) 进行测试
