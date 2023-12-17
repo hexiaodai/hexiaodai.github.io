@@ -51,6 +51,10 @@
 
 [使用 Envoyfilter 实现 Subpath 功能](istio/envoyfilter/subpath.md)
 
+[使用 Envoyfilter 隐藏 HTTP Response Header server 字段](istio/envoyfilter/隐藏http-response-header-server字段.md)
+
+[使用 Envoyfilter 给 istio-ingresstaeway 添加全局的 HTTP Header](istio/envoyfilter/global-http-header.md)
+
 [Sidecar 启动顺序问题](istio/faq/sidecar启动顺序问题.md)
 
 [VirtualService 路由匹配顺序问题](istio/faq/virtualservice路由匹配顺序问题.md)
