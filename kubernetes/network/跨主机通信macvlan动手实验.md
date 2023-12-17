@@ -24,137 +24,139 @@ macvlan 是 Linux kernel 提供的网络虚拟化解决方案，准确说这是�
 
 ## 动手实验
 
-1. 进入 Node-1 给 ens33 网卡创建 macvlan 子接口：
+1. 进入 Node-1，给 ens33 网卡创建 macvlan 子接口：
 
-```bash
-ip link add link ens33 dev macvlan1 type macvlan mode bridge
-```
+   ```bash
+   ip link add link ens33 dev macvlan1 type macvlan mode bridge
+   ```
 
-2. 进入 Node-2 给 ens33 网卡创建 macvlan 子接口：
+2. 进入 Node-2，给 ens33 网卡创建 macvlan 子接口：
 
-```bash
-ip link add link ens33 dev macvlan1 type macvlan mode bridge
-```
+   ```bash
+   ip link add link ens33 dev macvlan1 type macvlan mode bridge
+   ```
 
-3. 进入 Node-1 创建 docker1 容器：
+3. 进入 Node-1，创建 docker1 容器：
 
-```bash
-ip netns add docker1
-```
+   ```bash
+   ip netns add docker1
+   ```
 
-3. 进入 Node-2 创建 docker2 容器：
+3. 进入 Node-2，创建 docker2 容器：
 
-```bash
-ip netns add docker2
-```
+   ```bash
+   ip netns add docker2
+   ```
 
 4. 将两个子接口分别挂到 docker1 和 docker2 容器（Network Namespace）中：
 
-```bash
-# 在 Node-1 上执行
-ip link set macvlan1 netns docker1
+   ```bash
+   # 在 Node-1 上执行
+   ip link set macvlan1 netns docker1
 
-# 在 Node-2 上执行
-ip link set macvlan1 netns docker2
-```
+   # 在 Node-2 上执行
+   ip link set macvlan1 netns docker2
+   ```
 
-5. 进入 docker1 和 docker2 容器，分别配置 IP 地址：
+5. 分别进入 docker1 和 docker2 容器，分别配置 IP 地址：
 
-```bash
-# 在 Node-1 上执行
-ip netns exec docker1 ip addr add 192.168.245.180/24 dev macvlan1
-ip netns exec docker1 ip link set macvlan1 up
+   ```bash
+   # 在 Node-1 上执行
+   ip netns exec docker1 ip addr add 192.168.245.180/24 dev macvlan1
+   ip netns exec docker1 ip link set macvlan1 up
 
-# 在 Node-2 上执行
-ip netns exec docker2 ip addr add 192.168.245.181/24 dev macvlan1
-ip netns exec docker2 ip link set macvlan1 up
-```
+   # 在 Node-2 上执行
+   ip netns exec docker2 ip addr add 192.168.245.181/24 dev macvlan1
+   ip netns exec docker2 ip link set macvlan1 up
+   ```
 
-*注意，Node-1 ens33 的 IP 是 192.168.245.168/24，配置的子接口 IP 也必须是同一网段的。Node-2 ens33 的 IP 是 192.168.245.172/24，配置的子接口 IP 也必须是同一网段的。*
+   *注意，Node-1 ens33 的 IP 是 192.168.245.168/24，配置的子接口 IP 也必须是同一网段的。Node-2 ens33 的 IP 是 192.168.245.172/24，配置的子接口 IP 也必须是同一网段的。*
 
 6. 分别查看 docker1 和 docker2 容器中的子接口：
 
-```bash
-# 在 Node-1 上执行
-4: macvlan1@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
-    link/ether 86:3c:59:4b:a7:ec brd ff:ff:ff:ff:ff:ff link-netnsid 0
-    inet 192.168.245.180/24 scope global macvlan1
-       valid_lft forever preferred_lft forever
-    inet6 fe80::843c:59ff:fe4b:a7ec/64 scope link
-       valid_lft forever preferred_lft forever
+   ```bash
+   # 在 Node-1 上执行
+   4: macvlan1@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+       link/ether 86:3c:59:4b:a7:ec brd ff:ff:ff:ff:ff:ff link-netnsid 0
+       inet 192.168.245.180/24 scope global macvlan1
+          valid_lft forever preferred_lft forever
+       inet6 fe80::843c:59ff:fe4b:a7ec/64 scope link
+          valid_lft forever preferred_lft forever
 
-# 在 Node-2 上执行
-4: macvlan1@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
-    link/ether ea:0e:ad:2a:f7:14 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-    inet 192.168.245.181/24 scope global macvlan1
-       valid_lft forever preferred_lft forever
-    inet6 fe80::e80e:adff:fe2a:f714/64 scope link
-       valid_lft forever preferred_lft forever
-```
+   # 在 Node-2 上执行
+   4: macvlan1@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+       link/ether ea:0e:ad:2a:f7:14 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+       inet 192.168.245.181/24 scope global macvlan1
+          valid_lft forever preferred_lft forever
+       inet6 fe80::e80e:adff:fe2a:f714/64 scope link
+          valid_lft forever preferred_lft forever
+   ```
 
 7. 测试网络连通性：
 
-进入 Node-1 的 docker1 ping Node-2 的 docker2：
+   进入 Node-1 的 docker1 容器，然后 ping Node-2 的 docker2 容器：
 
-```bash
-root@ubuntu:~# ping 192.168.245.181
-PING 192.168.245.181 (192.168.245.181) 56(84) bytes of data.
-64 bytes from 192.168.245.181: icmp_seq=1 ttl=64 time=0.683 ms
-```
+   ```bash
+   root@ubuntu:~# ping 192.168.245.181
+   PING 192.168.245.181 (192.168.245.181) 56(84) bytes of data.
+   64 bytes from 192.168.245.181: icmp_seq=1 ttl=64 time=0.683 ms
+   ```
 
-进入 Node-2 的 docker2 ping Node-1 的 docker1：
+   进入 Node-2 的 docker2 容器，然后 ping Node-1 的 docker1 容器：
 
-```bash
-root@ubuntu:~# ping 192.168.245.180
-PING 192.168.245.180 (192.168.245.180) 56(84) bytes of data.
-64 bytes from 192.168.245.180: icmp_seq=1 ttl=64 time=0.966 ms
-```
+   ```bash
+   root@ubuntu:~# ping 192.168.245.180
+   PING 192.168.245.180 (192.168.245.180) 56(84) bytes of data.
+   64 bytes from 192.168.245.180: icmp_seq=1 ttl=64 time=0.966 ms
+   ```
 
-进入 MAC OS 物理机，分别 ping docker1 和 docker2：
+   进入 MAC OS 物理机，分别 ping docker1 和 docker2 容器：
 
-```bash
-➜  ~ ping 192.168.245.180
-PING 192.168.245.180 (192.168.245.180): 56 data bytes
-64 bytes from 192.168.245.180: icmp_seq=0 ttl=64 time=1.027 ms
+   ```bash
+   ➜  ~ ping 192.168.245.180
+   PING 192.168.245.180 (192.168.245.180): 56 data bytes
+   64 bytes from 192.168.245.180: icmp_seq=0 ttl=64 time=1.027 ms
 
-➜  ~ ping 192.168.245.181
-PING 192.168.245.181 (192.168.245.181): 56 data bytes
-64 bytes from 192.168.245.181: icmp_seq=0 ttl=64 time=0.958 ms
-```
+   ➜  ~ ping 192.168.245.181
+   PING 192.168.245.181 (192.168.245.181): 56 data bytes
+   64 bytes from 192.168.245.181: icmp_seq=0 ttl=64 time=0.958 ms
+   ```
+    
+   发现，docker1、docker2 和 MAC OS 物理机的网络是互通的。这正是 macvlan 的特性。
 
-然后使用 tcpdump 分别抓 Node-2 ens33、docker2 macvlan1 的网卡：
+   然后使用 tcpdump 分别抓 Node-2 ens33、docker2 macvlan1 的网卡：
 
-```bash
-# tcpdump: Node-2 ens33 网卡
-root@ubuntu:~# tcpdump -i ens33 -n | grep 192.168.245.181
-08:32:11.939133 ARP, Request who-has 192.168.245.181 tell 192.168.245.168, length 46
-08:32:11.939165 ARP, Reply 192.168.245.181 is-at ea:0e:ad:2a:f7:14, length 28
-08:32:12.078591 ARP, Request who-has 192.168.245.168 tell 192.168.245.181, length 28
-08:32:12.866861 IP 192.168.245.168 > 192.168.245.181: ICMP echo request, id 9, seq 7, length 64
-08:32:12.866903 IP 192.168.245.181 > 192.168.245.168: ICMP echo reply, id 9, seq 7, length 64
+   ```bash
+   # tcpdump: Node-2 ens33 网卡
+   root@ubuntu:~# tcpdump -i ens33 -n | grep 192.168.245.181
+   08:32:11.939133 ARP, Request who-has 192.168.245.181 tell 192.168.245.168, length 46
+   08:32:11.939165 ARP, Reply 192.168.245.181 is-at ea:0e:ad:2a:f7:14, length 28
+   08:32:12.078591 ARP, Request who-has 192.168.245.168 tell 192.168.245.181, length 28
+   08:32:12.866861 IP 192.168.245.168 > 192.168.245.181: ICMP echo request, id 9, seq 7, length 64
+   08:32:12.866903 IP 192.168.245.181 > 192.168.245.168: ICMP echo reply, id 9, seq 7, length 64
 
-# tcpdump: docker2 macvlan1 网卡
-tcpdump -i macvlan1 -n | grep 192.168.245.181
-tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
-listening on macvlan1, link-type EN10MB (Ethernet), snapshot length 262144 bytes
-08:44:47.587940 IP 192.168.245.168 > 192.168.245.181: ICMP echo request, id 16, seq 1, length 64
-08:44:47.587967 IP 192.168.245.181 > 192.168.245.168: ICMP echo reply, id 16, seq 1, length 64
-```
+   # tcpdump: docker2 macvlan1 网卡
+   tcpdump -i macvlan1 -n | grep 192.168.245.181
+   tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+   listening on macvlan1, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+   08:44:47.587940 IP 192.168.245.168 > 192.168.245.181: ICMP echo request, id 16, seq 1, length 64
+   08:44:47.587967 IP 192.168.245.181 > 192.168.245.168: ICMP echo reply, id 16, seq 1, length 64
+   ```
 
-MAC OS 物理机（192.168.245.1/24）、docker1（192.168.245.180/24）和 docker2（192.168.245.181/24）看起来就在同一个局域网内，它们之间可以直接通信。这里证实了 Linux macvlan 将一块物理网卡虚拟成多块虚拟网卡，相当于物理网卡施展了多重影分身之术，由一个变多个。这里没有任何问题。
+   MAC OS 物理机（192.168.245.1/24）、docker1（192.168.245.180/24）和 docker2（192.168.245.181/24）看起来就在同一个局域网内，它们之间可以直接通信。这里证实了 Linux macvlan 将一块物理网卡虚拟成多块虚拟网卡，相当于物理网卡施展了多重影分身之术，由一个变多个。这里没有任何问题。
 
-当在 Node-1 的 docker1 内 ping Node-2 的 docker2 时，发现 Node-2 的 ens33 网卡收到了来自 Node-1 ens33 网卡的 ARP 包：
+   当在 Node-1 的 docker1 内 ping Node-2 的 docker2 时，发现 Node-2 的 ens33 网卡收到了来自 Node-1 ens33 网卡的 ARP 包：
 
-```bash
-08:32:11.939133 ARP, Request who-has 192.168.245.181 tell 192.168.245.168, length 46
-08:32:11.939165 ARP, Reply 192.168.245.181 is-at ea:0e:ad:2a:f7:14, length 28
-```
+   ```bash
+   08:32:11.939133 ARP, Request who-has 192.168.245.181 tell 192.168.245.168, length 46
+   08:32:11.939165 ARP, Reply 192.168.245.181 is-at ea:0e:ad:2a:f7:14, length 28
+   ```
 
-这个 ARP 包的意思是：Node-1（192.168.245.168）广播了一个 ARP 请求，询问谁拥有 docker2（192.168.245.181）的 MAC 地址；docker2（192.168.245.181）的设备回复了一个单播的 ARP 响应，告知 Node-1（192.168.245.168）其 MAC 地址，这个 MAC 地址 `ea:0e:ad:2a:f7:14` 就是 docker2 macvlan1 的 MAC 地址。这里证实了 macvlan 子接口与主接口共享同一个广播域，这里没有任何问题。
+   这个 ARP 包的意思是：Node-1（192.168.245.168）广播了一个 ARP 请求，询问谁拥有 docker2（192.168.245.181）的 MAC 地址；docker2（192.168.245.181）的设备回复了一个单播的 ARP 响应，告知 Node-1（192.168.245.168）其 MAC 地址。这个 MAC 地址 `ea:0e:ad:2a:f7:14` 就是 docker2 macvlan1 的 MAC 地址。这里证实了 macvlan 子接口与主接口共享同一个广播域。
 
 ## 总结
 
-通过学习了 **macvlan** 概念后，亲自动手模拟出了 macvlan + 容器跨主机网络通信，并分别测试了容器间的网络互通、从宿主机访问容器内网络等场景的网络互通。并且掌握了 Linux macvlan 的基本概念。
+通过学习了 **macvlan** 概念后，亲自动手模拟出了 macvlan + 容器跨主机网络通信，并分别测试了容器间的网络互通、从宿主机访问容器内网络等场景的网络互通。并且发现 macvlan 实现跨主机网络通信非常简单，进出容器的 IP 包只需要经过宿主机的网卡设备就可以了，不需要 Bridge、VXLAN、iptables 等设备和规则，完全依赖于 Linux 内核的实现。缺点就是容器会占用宿主机网卡网段的 IP（某些场景下，这可能不是缺点）。
 
 **参考资料：**
 
