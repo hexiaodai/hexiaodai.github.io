@@ -9,9 +9,9 @@
 
 ## 📝 Blog
 
-<code><img height="20" src="https://raw.githubusercontent.com/github/explore/01ea2a586e5da744792d0ccfce2f68b861f29301/topics/kubernetes/kubernetes.png"></code>
-<code><img height="20" src="https://avatars.githubusercontent.com/u/18700703?s=200&v=4"></code>
-<code><img height="20" src="https://avatars.githubusercontent.com/u/23534644?s=200&v=4"></code>
+<code><img height="30" src="https://raw.githubusercontent.com/github/explore/01ea2a586e5da744792d0ccfce2f68b861f29301/topics/kubernetes/kubernetes.png"></code>
+<code><img height="30" src="https://avatars.githubusercontent.com/u/18700703?s=300&v=4"></code>
+<code><img height="30" src="https://avatars.githubusercontent.com/u/23534644?s=300&v=4"></code>
 
 ### Kubernetes
 
