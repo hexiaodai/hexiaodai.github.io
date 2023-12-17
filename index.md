@@ -49,7 +49,7 @@
 
 [认证和授权](istio/安全/认证和授权.md)
 
-[使用 Envoyfilter 实现 Subpath 功能](istio/envoyfilter/subpath.md)
+[使用 Envoyfilter 实现 subpath 功能](istio/envoyfilter/subpath.md)
 
 [使用 Envoyfilter 隐藏 HTTP Response Header server 字段](istio/envoyfilter/隐藏http-response-header-server字段.md)
 
