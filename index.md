@@ -9,7 +9,7 @@
 
 ## 📝 Blog
 
-<code><a href="./#kubernetes"><img height="30" src="https://raw.githubusercontent.com/github/explore/01ea2a586e5da744792d0ccfce2f68b861f29301/topics/kubernetes/kubernetes.png"></a></code>
+<code><a href="/#kubernetes"><img height="30" src="https://raw.githubusercontent.com/github/explore/01ea2a586e5da744792d0ccfce2f68b861f29301/topics/kubernetes/kubernetes.png"></a></code>
 <code><a href="./#kubevirt"><img height="30" src="https://avatars.githubusercontent.com/u/18700703?s=300&v=4"></a></code>
 <code><a href="./#istio"><img height="30" src="https://avatars.githubusercontent.com/u/23534644?s=300&v=4"></a></code>
 
