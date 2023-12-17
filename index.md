@@ -21,8 +21,6 @@
 
 [跨主机通信路由模式动手实验](kubernetes/network/跨主机通信路由模式动手实验.md)
 
-[跨主机通信路由模式动手实验](kubernetes/network/跨主机通信路由模式动手实验.md)
-
 [跨主机通信 Calico IPIP 动手实验](kubernetes/network/跨主机通信calicoIPIP动手实验.md)
 
 [跨主机通信 macvlan 动手实验](kubernetes/network/跨主机通信macvlan动手实验.md)
