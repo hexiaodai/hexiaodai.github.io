@@ -45,132 +45,136 @@ root@ubuntu:~# systemctl start openvswitch-switch
 
 ### 场景一：无隔离网络
 
+这种场景和 Linux Bridge + Veth Paris 搭配类似，将容器的虚拟网卡与网桥绑定，不同点是，进出容器的 IP 包走的是主机 eth1 网卡。
+
 ![无隔离网络](./assets/93c52349da352d6p.png)
 
 1. 在 Node-1 上操作：
 
-```bash
-# 创建 br0 网桥
-ovs-vsctl add-br br0
+   ```bash
+   # 创建 br0 网桥
+   ovs-vsctl add-br br0
 
-# 将 ens37 网卡以端口的方式，添加到 br0 网桥中
-ovs-vsctl add-port br0 ens37
+   # 将 ens37 网卡以端口的方式，添加到 br0 网桥中
+   ovs-vsctl add-port br0 ens37
 
-# 添加两个内部端口
-ovs-vsctl add-port br0 vnet0 -- set Interface vnet0 type=internal
-ovs-vsctl add-port br0 vnet1 -- set Interface vnet1 type=internal
+   # 添加两个内部端口
+   ovs-vsctl add-port br0 vnet0 -- set Interface vnet0 type=internal
+   ovs-vsctl add-port br0 vnet1 -- set Interface vnet1 type=internal
 
-# 创建 docker1 和 docker2 容器
-ip netns add docker1
-ip netns add docker2
+   # 创建 docker1 和 docker2 容器
+   ip netns add docker1
+   ip netns add docker2
 
-# 将 br0 网桥内部端口分别移动到 docker1 和 docker2 容器中
-ip link set vnet0 netns docker1
-ip link set vnet1 netns docker2
+   # 将 br0 网桥内部端口分别移动到 docker1 和 docker2 容器中
+   ip link set vnet0 netns docker1
+   ip link set vnet1 netns docker2
 
-# 启动端口并配置 IP
-ip netns exec docker1 ip link set lo up
-ip netns exec docker1 ip link set vnet0 up
-ip netns exec docker1 ip addr add 10.0.0.1/24 dev vnet0
+   # 启动端口并配置 IP
+   ip netns exec docker1 ip link set lo up
+   ip netns exec docker1 ip link set vnet0 up
+   ip netns exec docker1 ip addr add 10.0.0.1/24 dev vnet0
 
-ip netns exec docker2 ip link set lo up
-ip netns exec docker2 ip link set vnet1 up
-ip netns exec docker2 ip addr add 10.0.0.2/24 dev vnet1
+   ip netns exec docker2 ip link set lo up
+   ip netns exec docker2 ip link set vnet1 up
+   ip netns exec docker2 ip addr add 10.0.0.2/24 dev vnet1
 
-# 查看 br0 网桥
-ovs-vsctl show
-  Bridge br0
-    Port ens37
-      Interface ens37
-        type: internal
-    Port vnet0
-      Interface vnet0
-        type: internal
-    Port vnet1
-      Interface vnet1
-        type: internal
-    Port br0
-      Interface br0
-        type: internal
-```
+   # 查看 br0 网桥
+   ovs-vsctl show
+     Bridge br0
+       Port ens37
+         Interface ens37
+           type: internal
+       Port vnet0
+         Interface vnet0
+           type: internal
+       Port vnet1
+         Interface vnet1
+           type: internal
+       Port br0
+         Interface br0
+           type: internal
+   ```
 
-2. 在 Node-2 上操作：
+   2. 在 Node-2 上操作：
 
-```bash
-# 创建 br0 网桥
-ovs-vsctl add-br br0
+   ```bash
+   # 创建 br0 网桥
+   ovs-vsctl add-br br0
 
-# 将 ens37 网卡以端口的方式，添加到 br0 网桥中
-ovs-vsctl add-port br0 ens37
+   # 将 ens37 网卡以端口的方式，添加到 br0 网桥中
+   ovs-vsctl add-port br0 ens37
 
-# 添加两个内部端口
-ovs-vsctl add-port br0 vnet0 -- set Interface vnet0 type=internal
-ovs-vsctl add-port br0 vnet1 -- set Interface vnet1 type=internal
+   # 添加两个内部端口
+   ovs-vsctl add-port br0 vnet0 -- set Interface vnet0 type=internal
+   ovs-vsctl add-port br0 vnet1 -- set Interface vnet1 type=internal
 
-# 创建 docker3 和 docker4 容器
-ip netns add docker3
-ip netns add docker4
+   # 创建 docker3 和 docker4 容器
+   ip netns add docker3
+   ip netns add docker4
 
-# 将 br0 网桥内部端口分别移动到 docker3 和 docker4 容器中
-ip link set vnet0 netns docker3
-ip link set vnet1 netns docker4
+   # 将 br0 网桥内部端口分别移动到 docker3 和 docker4 容器中
+   ip link set vnet0 netns docker3
+   ip link set vnet1 netns docker4
 
-# 启动端口并配置 IP
-ip netns exec docker3 ip link set lo up
-ip netns exec docker3 ip link set vnet0 up
-ip netns exec docker3 ip addr add 10.0.0.3/24 dev vnet0
+   # 启动端口并配置 IP
+   ip netns exec docker3 ip link set lo up
+   ip netns exec docker3 ip link set vnet0 up
+   ip netns exec docker3 ip addr add 10.0.0.3/24 dev vnet0
 
-ip netns exec docker4 ip link set lo up
-ip netns exec docker4 ip link set vnet1 up
-ip netns exec docker4 ip addr add 10.0.0.4/24 dev vnet1
+   ip netns exec docker4 ip link set lo up
+   ip netns exec docker4 ip link set vnet1 up
+   ip netns exec docker4 ip addr add 10.0.0.4/24 dev vnet1
 
-# 查看 br0 网桥
-ovs-vsctl show
-  Bridge br0
-    Port ens37
-      Interface ens37
-        type: internal
-    Port vnet0
-      Interface vnet0
-        type: internal
-    Port vnet1
-      Interface vnet1
-        type: internal
-    Port br0
-      Interface br0
-        type: internal
-```
+   # 查看 br0 网桥
+   ovs-vsctl show
+     Bridge br0
+       Port ens37
+         Interface ens37
+           type: internal
+       Port vnet0
+         Interface vnet0
+           type: internal
+       Port vnet1
+         Interface vnet1
+           type: internal
+       Port br0
+         Interface br0
+           type: internal
+   ```
 
 3. 连通性测试
 
-在 Node-1 上：
+   在 Node-1 上：
 
-```bash
-ip netns exec docker1 ping 10.0.0.3
-ip netns exec docker1 ping 10.0.0.4
-ip netns exec docker2 ping 10.0.0.3
-ip netns exec docker2 ping 10.0.0.4
-```
+   ```bash
+   ip netns exec docker1 ping 10.0.0.3
+   ip netns exec docker1 ping 10.0.0.4
+   ip netns exec docker2 ping 10.0.0.3
+   ip netns exec docker2 ping 10.0.0.4
+   ```
 
-在 Node-2 上：
+   在 Node-2 上：
 
-```bash
-ip netns exec docker3 ping 10.0.0.1
-ip netns exec docker3 ping 10.0.0.2
-ip netns exec docker4 ping 10.0.0.1
-ip netns exec docker4 ping 10.0.0.2
-```
+   ```bash
+   ip netns exec docker3 ping 10.0.0.1
+   ip netns exec docker3 ping 10.0.0.2
+   ip netns exec docker4 ping 10.0.0.1
+   ip netns exec docker4 ping 10.0.0.2
+   ```
 
-测试结果：
+   测试结果：
 
-| Node-1 | Node-2 | ping 结果 |
-| :---- | :---- | :---- |
-| docker1 | docker3 | ✅ |
-| docker1 | docker4 | ✅ |
-| docker2 | docker3 | ✅ |
-| docker2 | docker4 | ✅ |
+   | Node-1 | Node-2 | ping 结果 |
+   | :---- | :---- | :---- |
+   | docker1 | docker3 | ✅ |
+   | docker1 | docker4 | ✅ |
+   | docker2 | docker3 | ✅ |
+   | docker2 | docker4 | ✅ |
 
 ### 场景二：分布式隔离网络
+
+分布式隔离网络，Linux Bridge 无法实现。
 
 构建分布式隔离网络和单节点的操作方法一致，即给对应的端口配置 VLAN tag。如下图所示，我们分别给主机 A、B 上的端口配置 VLAN tag为 100 和 200。
 
@@ -178,47 +182,47 @@ ip netns exec docker4 ping 10.0.0.2
 
 1. 在 Node-1 上操作：
 
-```bash
-ovs-vsctl set Port vnet0 tag=100
-ovs-vsctl set Port vnet1 tag=200
-```
+   ```bash
+   ovs-vsctl set Port vnet0 tag=100
+   ovs-vsctl set Port vnet1 tag=200
+   ```
 
 2. 在 Node-2 上操作：
 
 ```bash
-ovs-vsctl set Port vnet0 tag=100
-ovs-vsctl set Port vnet1 tag=200
+   ovs-vsctl set Port vnet0 tag=100
+   ovs-vsctl set Port vnet1 tag=200
 ```
 
 3. 连通性测试
 
-在 Node-1 上：
+   在 Node-1 上：
 
-```bash
-ip netns exec docker1 ping 10.0.0.3
-ip netns exec docker1 ping 10.0.0.4
-ip netns exec docker2 ping 10.0.0.3
-ip netns exec docker2 ping 10.0.0.4
-```
+   ```bash
+   ip netns exec docker1 ping 10.0.0.3
+   ip netns exec docker1 ping 10.0.0.4
+   ip netns exec docker2 ping 10.0.0.3
+   ip netns exec docker2 ping 10.0.0.4
+   ```
 
-在 Node-2 上：
+   在 Node-2 上：
 
-```bash
-ip netns exec docker3 ping 10.0.0.1
-ip netns exec docker3 ping 10.0.0.2
-ip netns exec docker4 ping 10.0.0.1
-ip netns exec docker4 ping 10.0.0.2
-```
+   ```bash
+   ip netns exec docker3 ping 10.0.0.1
+   ip netns exec docker3 ping 10.0.0.2
+   ip netns exec docker4 ping 10.0.0.1
+   ip netns exec docker4 ping 10.0.0.2
+   ```
 
-测试结果：
+   测试结果：
 
-| Node-1 | Node-2 | ping 结果 |
-| :---- | :---- | :---- |
-| docker1 | docker3 | ✅ |
-| docker1 | docker4 | ❌ |
-| docker2 | docker3 | ❌ |
-| docker2 | docker4 | ✅ |
+   | Node-1 | Node-2 | ping 结果 |
+   | :---- | :---- | :---- |
+   | docker1 | docker3 | ✅ |
+   | docker1 | docker4 | ❌ |
+   | docker2 | docker3 | ❌ |
+   | docker2 | docker4 | ✅ |
 
-*参考资料：*
+**参考资料：**
 
 [Open vSwitch 入门实践（3）使用 OVS 构建分布式隔离网络](https://mp.weixin.qq.com/s/2fxjU8DF1XLBctcXqrbcJw)
