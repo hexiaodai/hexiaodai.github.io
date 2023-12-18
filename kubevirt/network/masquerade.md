@@ -1,6 +1,6 @@
 # KubeVrit + Masquerade 动手实验
 
-在 masquerade 模式下，KubeVirt 为虚拟机分配内部 IP 地址，并将其隐藏在 NAT 后面。所有离开虚拟机的流量都使用 Pod IP 地址进行 SNAT。因此，集群内的工作负载应该使用 Pod 的 IP 地址连接虚拟机。该 IP 地址在 VMI 的 `spec.status.interface` 中定义。虚拟机操作系统应该配置为使用 DHCP 获取 IPv4 地址。
+在 masquerade 模式下，KubeVirt 为虚拟机分配内部 IP 地址，并将其隐藏在 NAT 后面。所有离开虚拟机的流量都使用 Pod IP 地址进行 SNAT。因此，集群内的工作负载应该使用 Pod 的 IP 地址连接虚拟机。该 IP 地址在 VMI 的 `status.interfaces` 中显示。虚拟机操作系统应该配置为使用 DHCP 获取 IP 地址。
 
 为了允许虚拟机实时迁移或硬重启（两者都会导致虚拟机运行在不同的 Pod 上，使用不同的 IP 地址）并且仍然可以访问，它应该由 Kubernetes 的 Service 公开。
 
