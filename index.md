@@ -36,7 +36,7 @@
 
 [KubeVirt Bridge + Open vSwitch 动手实验](kubevirt/network/bridge.md)
 
-[KubeVirt 网络最佳实践](kubevirt/network/kubevirt-spiderpool.md)
+<!-- [KubeVirt 网络最佳实践](kubevirt/network/kubevirt-spiderpool.md) -->
 
 ### Istio
 
