@@ -1,12 +1,12 @@
-- [Kata Containers 安全容器调研](#kata-containers安全容器调研)
+- [Kata Containers 安全容器调研](#kata-containers-安全容器调研)
   - [容器运行时](#容器运行时)
   - [容器的安全问题](#容器的安全问题)
   - [性能](#性能)
-  - [Kata Containers 安全容器运行时应用场景](#kata-containers安全容器运行时应用场景)
+  - [Kata Containers 安全容器运行时应用场景](#kata-containers-安全容器运行时应用场景)
   - [动手实践](#动手实践)
-    - [在 Kubernetes 集群中部署 Kata Containers 运行时](#在kubernetes集群中部署-kata-containers运行时)
-    - [统计 Kata Containers 容器运行时启动业务 Pod 耗时](#统计kata-containers容器运行时启动业务-pod耗时)
-    - [统计 runc 容器运行时启动业务 Pod 耗时](#统计runc容器运行时启动业务-pod耗时)
+    - [在 Kubernetes 集群中部署 Kata Containers 运行时](#在-kubernetes-集群中部署-kata-containers-运行时)
+    - [统计 Kata Containers 容器运行时启动业务 Pod 耗时](#统计-kata-containers-容器运行时启动业务-pod-耗时)
+    - [统计 runc 容器运行时启动业务 Pod 耗时](#统计-runc-容器运行时启动业务-pod-耗时)
 
 # Kata Containers 安全容器调研
 
@@ -43,6 +43,8 @@ kata-containers 容器运行时，采用了 Linux 内核级的资源隔离方案
 ## 性能
 
 runc 容器运行时，性能高，安全性差；VM 虚拟机，性能损耗大，但安全性好；Kata Container 是**轻量级虚拟机的容器运行时**，安全性好，启动快，性能也高。
+
+根据下图中 runc 和 Kata Container 容器运行时，启动业务容器耗时统计，仅需 1.5s 即可启动一个安全容器。
 
 下图展示了[百度智能云的应用实际白皮书]((https://katacontainers.io/collateral/Kata%20Containers%E5%9C%A8%E7%99%BE%E5%BA%A6%E6%99%BA%E8%83%BD%E4%BA%91%E7%9A%84%E5%BA%94%E7%94%A8%E5%AE%9E%E8%B7%B5.pdf)) Kata Containers 与 runc 容器运行时启动性能对比图：
 
